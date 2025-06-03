@@ -1,6 +1,6 @@
 use std::pin::Pin;
 use tokio::{
-    io::{BufReader, BufWriter},
+    io::{AsyncBufReadExt, BufReader, BufWriter},
     net::{
         tcp::{OwnedReadHalf, OwnedWriteHalf},
         TcpStream, ToSocketAddrs,
@@ -37,5 +37,12 @@ impl TcpIO {
 
     pub fn writer(&mut self) -> &mut BufWriter<OwnedWriteHalf> {
         &mut self.0.writer
+    }
+
+    pub async fn read_line(&mut self) -> Result<(usize, String), tokio::io::Error> {
+        let mut buf = String::new();
+        let len = self.0.reader.read_line(&mut buf).await?;
+        let parsed = buf.trim_end().to_string(); // remove line terminators \r\n
+        Ok((len, parsed))
     }
 }

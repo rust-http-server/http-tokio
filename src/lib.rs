@@ -6,7 +6,6 @@ mod status_code;
 mod request;
 mod response;
 mod tcp_io;
-mod reader_utils;
 pub mod server;
 
 pub use tcp_io::TcpIO;

@@ -1,4 +1,4 @@
-use super::{extensions::Extensions, headers::Headers, reader_utils::read_line, tcp_io::TcpIO};
+use super::{extensions::Extensions, headers::Headers, tcp_io::TcpIO};
 
 pub struct Request<T> {
     pub method: String,
@@ -12,7 +12,7 @@ pub type IncomingRequest = Request<()>;
 
 impl<T> Request<T> {
     pub async fn receive(io: &mut TcpIO) -> Result<IncomingRequest, RequestError> {
-        let (first_line_len, first_line) = read_line(io.reader()).await?;
+        let (first_line_len, first_line) = io.read_line().await?;
         if first_line_len == 0 { return Err(RequestError::ConnectionClosed) }
         let mut parts = first_line.split_whitespace();
         let method = parts
@@ -42,7 +42,7 @@ impl<T> Request<T> {
         let mut headers = Headers::new();
         let extensions = Extensions::new();
         loop {
-            let (len, line) = read_line(io.reader()).await?;
+            let (len, line) = io.read_line().await?;
             if len <= 2 {
                 break; // Empty line signals end of headers
             }
