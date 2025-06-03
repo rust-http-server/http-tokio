@@ -2,8 +2,6 @@ use std::ops::{Deref, DerefMut};
 use anymap::{any::{Any, IntoBox}, Map};
 use tokio::sync::{Mutex, MutexGuard};
 
-pub type OldExtensions = Map::<dyn Any + Send + Sync>;
-
 pub struct Extensions {
     map: Mutex<Map::<dyn Any + Send + Sync>>
 }
@@ -11,13 +9,6 @@ pub struct Extensions {
 impl Extensions {
     pub fn new() -> Self {
         Self { map: Mutex::new(Map::new()) }
-    }
-
-    /// NON SO SE SIA IL CASO
-    pub fn get_sync_unsafe<T>(&self) -> Option<Ext<'_, T>> where T: IntoBox<(dyn Any + Send + Sync)>
-    {
-        let guard = self.map.try_lock().expect("i am sorry for this... but i just dont like to await"); 
-        Self::guard_to_ext(guard)
     }
 
     /// Since it returns a guard, consider it like get_mut

@@ -9,12 +9,12 @@ use tokio_util::io::ReaderStream;
 
 use crate::body::Body;
 
-use super::{extensions::OldExtensions, headers::Headers, status_code::StatusCode, TcpIO};
+use super::{extensions::Extensions, headers::Headers, status_code::StatusCode, TcpIO};
 
 pub struct Response<T> {
     pub status: StatusCode,
     pub headers: Headers,
-    pub extensions: OldExtensions,
+    pub extensions: Extensions,
     pub body: Option<T>,
 }
 
@@ -24,7 +24,7 @@ impl<T> Response<T> {
             body: None,
             status: StatusCode::OK,
             headers: Headers::new(),
-            extensions: OldExtensions::new(),
+            extensions: Extensions::new(),
         }
     }
 

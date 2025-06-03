@@ -49,7 +49,7 @@ impl Connection {
             let mut res: Response = match req_or_early_res {
                 Either::Right(res) => res,
                 Either::Left(req) => {
-                    let payload = BodyReader::new(req.content_len().unwrap_or(0), io);
+                    let payload = BodyReader::new(req.content_len().await.unwrap_or(0), io);
                     let mut res = handler(&req, &payload).await;
                     if !res.headers.contains_key("Connection") {
                         let connection = req.headers.get("Connection").cloned().unwrap_or("keep-alive".to_string());

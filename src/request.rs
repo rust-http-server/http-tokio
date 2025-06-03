@@ -18,6 +18,7 @@ impl<T> Request<T> {
         let method = parts
             .next()
             .ok_or_else(|| RequestError::InvalidRequestLine(first_line.clone()))?
+            .to_uppercase()
             .to_string();
         let full_path = parts
             .next()
@@ -77,9 +78,8 @@ impl<T> Request<T> {
 }
 
 impl IncomingRequest {
-    pub fn content_len(&self) -> Option<usize> {
-        // FIXME: non so quanto questo vada bene...
-        self.extensions.get_sync_unsafe::<ContentLength>().map(|cl| cl.0)
+    pub async fn content_len(&self) -> Option<usize> {
+        self.extensions.get::<ContentLength>().await.map(|cl| cl.0)
     }
 }
 
