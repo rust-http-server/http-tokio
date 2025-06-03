@@ -22,16 +22,14 @@ impl<T> Response<T> {
     fn new() -> Self {
         Response {
             body: None,
-            status: StatusCode::Ok,
+            status: StatusCode::OK,
             headers: Headers::new(),
             extensions: OldExtensions::new(),
         }
     }
 
     fn fmt_head(&self) -> String {
-        let (code, status) = self.status.as_tuple();
-        let headers_str = self.headers.to_string();
-        format!("HTTP/1.1 {code} {status} \r\n{headers_str}\r\n\r\n",)
+        format!("HTTP/1.1 {} \r\n{}\r\n\r\n",self.status, self.headers.to_string())
     }
 }
 
