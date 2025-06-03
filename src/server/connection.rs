@@ -11,7 +11,8 @@ pub struct Connection {
 
 impl Connection {
     pub fn new(stream: TcpStream) -> Self { 
-        Self { keep_alive_timeout: 5, keep_alive_max: 200, io: TcpIO::new(stream) } }
+        Self { keep_alive_timeout: 5, keep_alive_max: 200, io: TcpIO::new(stream) } 
+    }
     
     pub async fn handle_with<F>(self, handler: F)
     where 
@@ -25,7 +26,7 @@ impl Connection {
         loop {
             handled_req_count += 1;
             
-            let t_req = timeout(Duration::from_secs(self.keep_alive_timeout as u64), Request::receive(&mut io)).await;
+            let t_req = timeout(Duration::from_secs(self.keep_alive_timeout as u64), io.receive_request()).await;
 
             let req_or_early_res = match t_req {
                 Ok(Ok(req)) => Either::Left(req),

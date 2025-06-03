@@ -1,4 +1,6 @@
-use super::{extensions::Extensions, headers::Headers, tcp_io::TcpIO};
+use crate::TcpIO;
+
+use super::{extensions::Extensions, headers::Headers};
 
 pub struct Request<T> {
     pub method: String,
@@ -10,9 +12,17 @@ pub struct Request<T> {
 
 pub type IncomingRequest = Request<()>;
 
-impl<T> Request<T> {
-    pub async fn receive(io: &mut TcpIO) -> Result<IncomingRequest, RequestError> {
-        let (first_line_len, first_line) = io.read_line().await?;
+impl IncomingRequest {
+    pub async fn content_len(&self) -> Option<usize> {
+        self.extensions.get::<ContentLength>().await.map(|cl| cl.0)
+    }
+}
+
+struct ContentLength(usize);
+
+impl TcpIO {
+    pub async fn receive_request(&mut self) -> Result<IncomingRequest, RequestError> {
+        let (first_line_len, first_line) = self.read_line().await?;
         if first_line_len == 0 { return Err(RequestError::ConnectionClosed) }
         let mut parts = first_line.split_whitespace();
         let method = parts
@@ -43,7 +53,7 @@ impl<T> Request<T> {
         let mut headers = Headers::new();
         let extensions = Extensions::new();
         loop {
-            let (len, line) = io.read_line().await?;
+            let (len, line) = self.read_line().await?;
             if len <= 2 {
                 break; // Empty line signals end of headers
             }
@@ -76,14 +86,6 @@ impl<T> Request<T> {
         })
     }
 }
-
-impl IncomingRequest {
-    pub async fn content_len(&self) -> Option<usize> {
-        self.extensions.get::<ContentLength>().await.map(|cl| cl.0)
-    }
-}
-
-struct ContentLength(usize);
 
 #[derive(thiserror::Error, Debug)]
 pub enum RequestError {
