@@ -1,0 +1,19 @@
+[package]
+name = "http-tokio"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anymap = "0.12.1"
+async_fn_traits = "0.1.1"
+bytes = "1.10.1"
+httpdate = "1.0.3"
+mime_guess = "2.0.5"
+thiserror = "2.0.12"
+tokio = { version = "1", features = ["fs", "rt", "net", "io-util"]}
+tokio-stream = "0.1.17"
+tokio-util = { version = "0.7.15", features = ["io"]}
+
+[lib]
