@@ -1,7 +1,7 @@
 mod body;
 mod body_reader;
 pub mod extensions;
-mod headers;
+pub mod headers;
 mod status_code;
 mod request;
 mod response;
