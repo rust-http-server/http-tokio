@@ -136,9 +136,10 @@ impl ResponseBuilder {
         self.inner.headers.add_set_cookie(key, value);
         self
     }
-
-    pub fn content_type(&mut self, c_type: impl AsRef<str>) {
+    
+    pub fn content_type(mut self, c_type: impl AsRef<str>) -> Self {
         self.inner.headers.content_type(c_type);
+        self
     }
 }
 
