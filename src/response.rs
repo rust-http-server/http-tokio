@@ -1,12 +1,11 @@
 use std::path::Path;
-
 use bytes::Bytes;
 use httpdate::HttpDate;
 use thiserror::Error;
 use tokio::{fs::File, io::AsyncWriteExt};
 use tokio_stream::{Stream, StreamExt};
 use tokio_util::io::ReaderStream;
-use crate::{body::Body, content_type};
+use crate::{body::Body, content_type::ContentType};
 use super::{extensions::Extensions, headers::Headers, status_code::StatusCode, TcpIO};
 
 #[derive(Debug)]
@@ -91,7 +90,7 @@ impl ResponseBuilder {
     pub fn body<I: Into<Bytes>>(mut self, body: I) -> HttpResponse {
         let body = body.into();
         if !self.inner.headers.contains_key("Content-Type") {
-            self.inner.headers.insert(content_type::plain());
+            self.inner.headers.content_type(ContentType::Plain);
         }
         self.inner.headers.insert(("Content-Length", &body.len().to_string()));
         self.inner.headers.remove("Transfer-Encoding");
@@ -101,7 +100,7 @@ impl ResponseBuilder {
 
     pub fn stream<S: Stream<Item = Result<Bytes, ResponseError>> + Send + Sync + Unpin + 'static>(mut self, body: S) -> HttpResponse {
         if !self.inner.headers.contains_key("Content-Type") {
-            self.inner.headers.insert(content_type::octet_stream());
+            self.inner.headers.content_type(ContentType::OctetStream);
         }
         self.inner.headers.remove("Content-Length");
         self.inner.headers.insert(("Transfer-Encoding", "chunked"));
@@ -136,6 +135,10 @@ impl ResponseBuilder {
     pub fn cookie(mut self, key: &str, value: &str) -> Self {
         self.inner.headers.add_set_cookie(key, value);
         self
+    }
+
+    pub fn content_type(&mut self, c_type: impl AsRef<str>) {
+        self.inner.headers.content_type(c_type);
     }
 }
 

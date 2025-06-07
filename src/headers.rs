@@ -53,6 +53,10 @@ impl Headers {
         })
     }
 
+    pub fn content_type(&mut self, c_type: impl AsRef<str>) {
+        self.insert(("Content-Type", c_type.as_ref().to_string()));
+    }
+
     /// Converts headers into a formatted string with capitalized keys.
     pub fn to_string(&self) -> String {
         self.0
