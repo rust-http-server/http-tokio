@@ -44,7 +44,7 @@ impl Connection {
                         Either::Right(res)
                     }
                 },
-                Err(_) => Either::Right(Response::build().status(408).header("Connection", "close").body("408 Request Timeout"))
+                Err(_) => Either::Right(Response::build().status(408).header(("Connection", "close")).body("408 Request Timeout"))
             };
 
             let mut res: Response = match req_or_early_res {

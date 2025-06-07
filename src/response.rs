@@ -128,8 +128,8 @@ impl ResponseBuilder {
         self
     }
 
-    pub fn header(mut self, header: &str, value: &str) -> Self {
-        self.inner.headers.insert((header, value));
+    pub fn header(mut self, header: (impl AsRef<str>, impl AsRef<str>)) -> Self {
+        self.inner.headers.insert(header);
         self
     }
 
