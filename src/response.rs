@@ -6,11 +6,10 @@ use thiserror::Error;
 use tokio::{fs::File, io::AsyncWriteExt};
 use tokio_stream::{Stream, StreamExt};
 use tokio_util::io::ReaderStream;
-
 use crate::body::Body;
-
 use super::{extensions::Extensions, headers::Headers, status_code::StatusCode, TcpIO};
 
+#[derive(Debug)]
 pub struct Response<T> {
     pub status: StatusCode,
     pub headers: Headers,

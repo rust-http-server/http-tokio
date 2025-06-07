@@ -2,6 +2,7 @@ use crate::TcpIO;
 
 use super::{extensions::Extensions, headers::Headers};
 
+#[derive(Debug)]
 pub struct Request<T> {
     pub method: String,
     pub path: String,

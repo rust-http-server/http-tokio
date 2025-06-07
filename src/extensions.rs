@@ -2,6 +2,7 @@ use std::ops::{Deref, DerefMut};
 use anymap::{any::{Any, IntoBox}, Map};
 use tokio::sync::{Mutex, MutexGuard};
 
+#[derive(Debug)]
 pub struct Extensions {
     map: Mutex<Map::<dyn Any + Send + Sync>>
 }
