@@ -9,44 +9,33 @@ impl Headers {
     }
     
     /// Custom insert: forces lowercase keys
-    pub fn insert(&mut self, key: &str, value: &str) {
-        self.0.insert(key.to_lowercase(), vec![value.to_string()]);
+    pub fn insert(&mut self, key_value: (impl AsRef<str>, impl AsRef<str>)) {
+        self.0.insert(capitalize_key(key_value.0.as_ref()), vec![key_value.1.as_ref().to_string()]);
     }
 
-    pub fn append(&mut self, key: &str, value: &str) {
+    pub fn append(&mut self, key_value: (impl AsRef<str>, impl AsRef<str>)) {
         self.0
-            .entry(key.to_lowercase())
+            .entry(capitalize_key(key_value.0.as_ref()))
             .or_insert_with(Vec::new)
-            .push(value.to_string());
+            .push(key_value.1.as_ref().to_string());
     }
 
     pub fn insert_header_line(&mut self, line: &str) -> Result<(), ()> {
-        if let Some((key, value)) = line.split_once(": ") {
-            self.insert(key, value);
+        if let Some(key_value) = line.split_once(": ") {
+            self.insert(key_value);
             Ok(())
         } else {
             Err(())
         }
     }
 
-    /// Custom get: forces lowercase lookup
     pub fn get(&self, key: &str) -> Option<&String> {
-        self.0.get(&key.to_lowercase()).map(|v| v.first()).flatten()
-    }
-
-    /// Custom remove: forces lowercase lookup
-    pub fn remove(&mut self, key: &str) -> Option<Vec<String>> {
-        self.0.remove(&key.to_lowercase())
-    }
-
-    /// Custom remove: forces lowercase lookup
-    pub fn contains_key(&self, key: &str) -> bool {
-        self.0.contains_key(&key.to_lowercase())
+        self.0.get(&capitalize_key(key)).map(|v| v.first()).flatten()
     }
 
     pub fn add_set_cookie(&mut self, name: &str, value: &str) {
         let cookie_str = format!("{}={}", name, value);
-        self.append("Set-Cookie", &cookie_str);
+        self.append(("Set-Cookie", cookie_str));
     }
 
     pub fn get_cookie(&self, name: &str) -> Option<String> {
@@ -70,7 +59,7 @@ impl Headers {
             .iter()
             .flat_map(|(key, values)| {
                 values.iter().map(move |value| {
-                    format!("{}: {}", capitalize_key(key), value)
+                    format!("{}: {}", key, value)
                 })
             })
             .collect::<Vec<_>>()

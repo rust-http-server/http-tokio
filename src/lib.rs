@@ -2,6 +2,7 @@ mod body;
 mod body_reader;
 pub mod extensions;
 pub mod headers;
+pub mod content_type;
 mod status_code;
 mod request;
 mod response;

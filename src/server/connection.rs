@@ -40,7 +40,7 @@ impl Connection {
                             _ => 500,
                         };
                         let mut res = Response::build().status(status).body("500 Internal Server Error"); // TODO
-                        res.headers.insert("Connection", "close");
+                        res.headers.insert(("Connection", "close"));
                         Either::Right(res)
                     }
                 },
@@ -55,11 +55,11 @@ impl Connection {
                     if !res.headers.contains_key("Connection") {
                         let connection = req.headers.get("Connection").cloned().unwrap_or("keep-alive".to_string());
                         if connection.eq_ignore_ascii_case("close") {
-                            res.headers.insert("Connection", "close");
+                            res.headers.insert(("Connection", "close"));
                             res.headers.remove("Keep-Alive");
                         } else {
-                            res.headers.insert("Connection", "keep-alive");
-                            res.headers.insert("Keep-Alive", &format!("timeout={}, max={}", self.keep_alive_timeout, self.keep_alive_max));
+                            res.headers.insert(("Connection", "keep-alive"));
+                            res.headers.insert(("Keep-Alive", &format!("timeout={}, max={}", self.keep_alive_timeout, self.keep_alive_max)));
                         }
                     }
                     if payload.drain().await.is_err() {

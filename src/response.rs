@@ -6,7 +6,7 @@ use thiserror::Error;
 use tokio::{fs::File, io::AsyncWriteExt};
 use tokio_stream::{Stream, StreamExt};
 use tokio_util::io::ReaderStream;
-use crate::body::Body;
+use crate::{body::Body, content_type};
 use super::{extensions::Extensions, headers::Headers, status_code::StatusCode, TcpIO};
 
 #[derive(Debug)]
@@ -84,16 +84,16 @@ pub struct ResponseBuilder {
 impl ResponseBuilder {
     fn new() -> Self {
         let mut res = Response::new();
-        res.headers.insert("Date", &HttpDate::from(std::time::SystemTime::now()).to_string());
+        res.headers.insert(("Date", &HttpDate::from(std::time::SystemTime::now()).to_string()));
         Self { inner: res }
     }
 
     pub fn body<I: Into<Bytes>>(mut self, body: I) -> HttpResponse {
         let body = body.into();
         if !self.inner.headers.contains_key("Content-Type") {
-            self.inner.headers.insert("Content-Type", "text/plain; charset=utf-8");
+            self.inner.headers.insert(content_type::plain());
         }
-        self.inner.headers.insert("Content-Length", &body.len().to_string());
+        self.inner.headers.insert(("Content-Length", &body.len().to_string()));
         self.inner.headers.remove("Transfer-Encoding");
         self.inner.body = Some(body.into());
         self.inner
@@ -101,10 +101,10 @@ impl ResponseBuilder {
 
     pub fn stream<S: Stream<Item = Result<Bytes, ResponseError>> + Send + Sync + Unpin + 'static>(mut self, body: S) -> HttpResponse {
         if !self.inner.headers.contains_key("Content-Type") {
-            self.inner.headers.insert("Content-Type", "application/octet-stream");
+            self.inner.headers.insert(content_type::octet_stream());
         }
         self.inner.headers.remove("Content-Length");
-        self.inner.headers.insert("Transfer-Encoding", "chunked");
+        self.inner.headers.insert(("Transfer-Encoding", "chunked"));
         self.inner.body = Some(Body::Stream(Box::new(body)));
         self.inner
     }
@@ -112,7 +112,7 @@ impl ResponseBuilder {
     pub async fn file<P: AsRef<Path>>(mut self, path: P) -> Result<HttpResponse, std::io::Error> {
         if !self.inner.headers.contains_key("Content-Type") {
             let content_type = mime_guess::from_path(&path).first_or_octet_stream().to_string();
-            self.inner.headers.insert("Content-Type", &content_type);
+            self.inner.headers.insert(("Content-Type", &content_type));
         }
         let file = File::open(&path).await?;
         let stream = ReaderStream::new(file).map(|res| res.map(Bytes::from).map_err(Into::into));
@@ -129,7 +129,7 @@ impl ResponseBuilder {
     }
 
     pub fn header(mut self, header: &str, value: &str) -> Self {
-        self.inner.headers.insert(header, value);
+        self.inner.headers.insert((header, value));
         self
     }
 

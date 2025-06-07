@@ -64,7 +64,7 @@ impl TcpIO {
                 if key.eq_ignore_ascii_case("content-length") {
                     match value.parse::<usize>() {
                         Ok(length) => {
-                            headers.append(key, value);
+                            headers.append((key, value));
                             extensions.insert(ContentLength(length)).await;
                         }
                         Err(_) => {
@@ -72,7 +72,7 @@ impl TcpIO {
                         }
                     }
                 }
-                headers.append(key, value);
+                headers.append((key, value));
             } else {
                 return Err(RequestError::InvalidHeader(line));
             }
