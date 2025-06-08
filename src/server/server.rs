@@ -1,5 +1,5 @@
 use tokio::{net::{TcpListener, ToSocketAddrs}, task};
-use crate::server::{Connection, ConnectionHandler};
+use crate::{server::{Connection, ConnectionHandler}};
 
 pub async fn run_server<A: ToSocketAddrs>(addr: A, handler: impl for<'a> ServerHandler<'a>) -> tokio::io::Result<()> {
     let server = TcpListener::bind(addr).await?;
@@ -23,5 +23,3 @@ pub trait ServerHandler<'a>: ConnectionHandler<'a> {
         Box::pin(async move {})
     }
 }
-
-impl<'a, CH: ConnectionHandler<'a>> ServerHandler<'a> for CH {}

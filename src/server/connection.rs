@@ -97,7 +97,7 @@ impl Connection {
     }
 }
 
-pub trait ConnectionHandler<'a>: Clone + Send  + Sync + 'static {
+pub trait ConnectionHandler<'a>: Clone + Send + 'static {
     fn handle_connection(&'a self, request: &'a Request, payload: &'a BodyReader) -> std::pin::Pin<Box<dyn Future<Output = Response> + Send + 'a>>;
     /// should use the suggested status code
     fn handle_client_error(&'a self, err: RequestError, status_code: StatusCode) -> std::pin::Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
