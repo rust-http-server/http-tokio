@@ -1,6 +1,7 @@
 use std::{future::Future, net::SocketAddr, time::Duration};
 use crate::{status_code::StatusCode, BodyReader, Request, RequestError, Response, TcpIO};
 use tokio::{net::{TcpStream}, time::timeout};
+use tracing::{info, instrument, warn};
 
 pub struct Connection {
     keep_alive_timeout: u8,
@@ -15,7 +16,7 @@ impl Connection {
         Self { keep_alive_timeout: 5, keep_alive_max: 200, io: TcpIO::new(stream), addr } 
     }
     
-    #[cfg_attr(feature = "tracing", tracing::instrument(skip_all, fields(peer = %self.addr)))]
+    #[instrument(skip_all, fields(client_address = %self.addr))]
     pub async fn handle_with(self, handler: impl for<'a> ConnectionHandler<'a>) {
         let mut io = self.io;
 
@@ -31,7 +32,7 @@ impl Connection {
                 Ok(Ok(req)) => Either::Left(req),
                 Ok(Err(err)) => match err {
                     RequestError::ConnectionClosed => {
-                        crate::log_info!("Connection closed by client, stopping keep-alive loop");
+                        info!("Connection closed by client, stopping keep-alive loop");
                         break;
                     },
                     _ => {
@@ -41,14 +42,14 @@ impl Connection {
                             RequestError::UnsupportedHttpVersion(_) => StatusCode::HTTP_VERSION_NOT_SUPPORTED,
                             _ => StatusCode::INTERNAL_SERVER_ERROR,
                         };
-                        crate::log_warn!("Error receiving request, sending error response with status {}", error = %err);
+                        warn!(error = %err, "Error receiving request, sending error response with status");
                         let mut res = handler.handle_client_error(err, status).await;
                         res.headers.insert(("Connection", "close"));
                         Either::Right(res)
                     }
                 },
                 Err(_) => {
-                    crate::log_info!("Request timed out after {} seconds, sending timeout response", self.keep_alive_timeout);
+                    info!("Request timed out after {} seconds, sending timeout response", self.keep_alive_timeout);
                     Either::Right(handler.handle_timeout().await)
                 }
             };
@@ -69,7 +70,7 @@ impl Connection {
                         }
                     }
                     if payload.drain().await.is_err() {
-                        crate::log_warn!("Error draining request body, closing connection");
+                        warn!("Error draining request body, closing connection");
                         break;
                     }
                     io = payload.into_io();
@@ -78,17 +79,17 @@ impl Connection {
             };
 
             if res.send(&mut io).await.is_err() {
-                crate::log_warn!("Error sending response, closing connection");
+                warn!("Error sending response, closing connection");
                 break;
             }
             
             match res.headers.get("Keep-Alive") {
                 _ if handled_req_count >= self.keep_alive_max => {
-                    crate::log_info!("Max keep-alive requests reached, closing connection");
+                    info!("Max keep-alive requests reached, closing connection");
                     break
                 },
                 None => {
-                    crate::log_info!("Found \"Connection: close\" header, closing connection");
+                    info!("Found \"Connection: close\" header, closing connection");
                     break
                 },
                 _ => {}

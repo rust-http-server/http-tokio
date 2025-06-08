@@ -1,4 +1,3 @@
-mod tracing;
 mod body;
 mod body_reader;
 pub mod extensions;

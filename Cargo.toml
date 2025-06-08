@@ -3,10 +3,6 @@ name = "http-tokio"
 version = "0.1.0"
 edition = "2021"
 
-[features]
-default = []
-tracing = ["dep:tracing"]
-
 [dependencies]
 anymap = "0.12.1"
 async_fn_traits = "0.1.1"
@@ -17,6 +13,6 @@ thiserror = "2.0.12"
 tokio = { version = "1", features = ["fs", "rt", "net", "io-util"]}
 tokio-stream = "0.1.17"
 tokio-util = { version = "0.7.15", features = ["io"]}
-tracing = { version = "0.1", optional = true, features = ["attributes"] }
+tracing = { version = "0.1", features = ["attributes"] }
 
 [lib]

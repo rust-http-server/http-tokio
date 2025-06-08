@@ -1,6 +1,7 @@
 use std::future::Future;
 
 use tokio::{net::{TcpListener, ToSocketAddrs}, task};
+use tracing::warn;
 use crate::{server::{Connection, ConnectionHandler}};
 
 pub async fn run_server<A: ToSocketAddrs>(addr: A, handler: impl for<'a> ServerHandler<'a>) -> tokio::io::Result<()> {
@@ -12,7 +13,7 @@ pub async fn run_server<A: ToSocketAddrs>(addr: A, handler: impl for<'a> ServerH
                 task::spawn(conn.handle_with(handler.clone()));
             }
             Err(err) => {
-                crate::log_warn!( error = %err, kind = ?err.kind(), "Failed to accept incoming connection");
+                warn!( error = %err, kind = ?err.kind(), "Failed to accept incoming connection");
                 handler.clone().handle_connection_error(err).await;
             },
         }
