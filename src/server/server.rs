@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use tokio::{net::{TcpListener, ToSocketAddrs}, task};
 use crate::{server::{Connection, ConnectionHandler}};
 
@@ -22,4 +24,11 @@ pub trait ServerHandler<'a>: ConnectionHandler<'a> {
     fn handle_connection_error(&'a self, err: tokio::io::Error) -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send + 'a>> {
         Box::pin(async move {})
     }
+}
+
+impl<'a, Fut, F> ServerHandler<'a> for F
+where 
+    Fut: Future<Output = crate::Response> + Send,
+    F: Fn(&'a crate::Request, &'a crate::BodyReader) -> Fut + Clone + Send + Sync + 'static
+{
 }
