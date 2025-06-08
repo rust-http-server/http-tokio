@@ -115,7 +115,7 @@ pub trait ConnectionHandler<'a>: Clone + Send + 'static {
 
 impl<'a, Fut, F> ConnectionHandler<'a> for F
 where 
-    Fut: Future<Output = Response> + Send + Sync,
+    Fut: Future<Output = Response> + Send,
     F: Fn(&'a Request, &'a BodyReader) -> Fut + Clone + Send + Sync + 'static
 {
     fn handle_connection(&'a self, request: &'a Request, payload: &'a BodyReader) -> std::pin::Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
