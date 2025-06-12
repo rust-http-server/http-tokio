@@ -11,6 +11,7 @@ pub mod server;
 
 pub use tcp_io::TcpIO;
 pub use request::{IncomingRequest as Request, RequestError};
+pub use status_code::StatusCode;
 pub use response::{HttpResponse as Response, ResponseError};
 pub use body_reader::BodyReader;
 pub use server::run_server;
