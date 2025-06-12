@@ -30,6 +30,6 @@ pub trait ServerHandler<'a>: ConnectionHandler<'a> {
 impl<'a, Fut, F> ServerHandler<'a> for F
 where 
     Fut: Future<Output = crate::Response> + Send,
-    F: Fn(&'a crate::Request, &'a crate::BodyReader) -> Fut + Clone + Send + Sync + 'static
+    F: FnOnce(&'a crate::Request, &'a crate::BodyReader) -> Fut + Clone + Send + Sync + 'static
 {
 }
